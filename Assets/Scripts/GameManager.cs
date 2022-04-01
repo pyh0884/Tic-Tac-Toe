@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,21 +11,40 @@ public class GameManager : MonoBehaviour
     //(-3.2,3.2),(0.0,3.2),(3.2,3.2)
     //(-3.2,0.0),(0.0,0.0),(3.2,0.0)
     //(-3.2,-3.2),(0.0,-3.2),(3.2,-3.2)
-    public GameObject winSprite, loseSprite, AIChess, PlayerChess;
+    public enum WinningValue
+    {
+        AIWin,
+        PlayerWin,
+        PlayerAdvantage,
+        AIAdvantage,
+        DeadCell,
+        Empty,
+    }
+
+    public enum CellStatus
+    {
+        Empty,
+        AI,
+        Player,
+    }
+
+    public GameObject winSprite, loseSprite, drawSprite, AIChess, PlayerChess;
     private bool[] playerChessPos = new bool[9];
     private bool[] AIChessPos = new bool[9];
-    private bool[] TotalChessPos = new bool[9];
+    private CellStatus[] TotalChessPos = new CellStatus[9];
+    private WinningValue[] WinningValues = new WinningValue[9];
     public Vector3[] ChessPositions;
     private bool isAIFirst = false;
     private bool AIReadyToAction = false;
     [HideInInspector] public bool isGameOver = false;
+    public int AIDifficultyLevel = 0;
 
     //Works only for 3X3 board game
     public int GetIndexFromCoords(Vector2Int coords)
     {
         return coords.y * 3 + coords.x;
     }
-    
+
     //Works only for 3X3 board game
     public Vector2Int GetCoordsFromIndex(int index)
     {
@@ -42,77 +61,78 @@ public class GameManager : MonoBehaviour
             if (mousePos.x < -4.5f || mousePos.x > 4.5f || mousePos.y > 4.5f || mousePos.y < -4.5f) return;
             if (mousePos.x > -4.5f && mousePos.x < -1.9f && mousePos.y > -4.5f && mousePos.y < -1.9f)
             {
-                if (TotalChessPos[0]) return;
-                //Debug.Log("Player placed chess at 0,0");
+                if (TotalChessPos[0] != CellStatus.Empty) return;
+                Debug.Log("Player placed chess at 0,0");
                 Instantiate(PlayerChess, new Vector3(-3.2f, -3.2f, 0.0f), Quaternion.identity, null);
                 playerChessPos[0] = true;
-                TotalChessPos[0] = true;
+                TotalChessPos[0] = CellStatus.Player;
             }
             if (mousePos.x > -1.3f && mousePos.x < 1.3f && mousePos.y > -4.5f && mousePos.y < -1.9f)
             {
-                if (TotalChessPos[1]) return;
-                //Debug.Log("Player placed chess at 1,0");
+                if (TotalChessPos[1] != CellStatus.Empty) return;
+                Debug.Log("Player placed chess at 1,0");
                 Instantiate(PlayerChess, new Vector3(0.0f, -3.2f, 0.0f), Quaternion.identity, null);
                 playerChessPos[1] = true;
-                TotalChessPos[1] = true;
+                TotalChessPos[1] = CellStatus.Player;
             }
             if (mousePos.x > 1.9f && mousePos.x < 4.5f && mousePos.y > -4.5f && mousePos.y < -1.9f)
             {
-                if (TotalChessPos[2]) return;
-                //Debug.Log("Player placed chess at 2,0");
+                if (TotalChessPos[2] != CellStatus.Empty) return;
+                Debug.Log("Player placed chess at 2,0");
                 Instantiate(PlayerChess, new Vector3(3.2f, -3.2f, 0.0f), Quaternion.identity, null);
                 playerChessPos[2] = true;
-                TotalChessPos[2] = true;
+                TotalChessPos[2] = CellStatus.Player;
             }
             if (mousePos.x > -4.5f && mousePos.x < -1.9f && mousePos.y > -1.3f && mousePos.y < 1.3f)
             {
-                if (TotalChessPos[3]) return;
-                //Debug.Log("Player placed chess at 0,1");
+                if (TotalChessPos[3] != CellStatus.Empty) return;
+                Debug.Log("Player placed chess at 0,1");
                 Instantiate(PlayerChess, new Vector3(-3.2f, 0.0f, 0.0f), Quaternion.identity, null);
                 playerChessPos[3] = true;
-                TotalChessPos[3] = true;
+                TotalChessPos[3] = CellStatus.Player;
             }
             if (mousePos.x > -1.3f && mousePos.x < 1.3f && mousePos.y > -1.3f && mousePos.y < 1.3f)
             {
-                if (TotalChessPos[4]) return;
-                //Debug.Log("Player placed chess at 1,1");
+                if (TotalChessPos[4] != CellStatus.Empty) return;
+                Debug.Log("Player placed chess at 1,1");
                 Instantiate(PlayerChess, new Vector3(0.0f, 0.0f, 0.0f), Quaternion.identity, null);
                 playerChessPos[4] = true;
-                TotalChessPos[4] = true;
+                TotalChessPos[4] = CellStatus.Player;
             }
             if (mousePos.x > 1.9f && mousePos.x < 4.5f && mousePos.y > -1.3f && mousePos.y < 1.3f)
             {
-                if (TotalChessPos[5]) return;
-                //Debug.Log("Player placed chess at 2,1");
+                if (TotalChessPos[5] != CellStatus.Empty) return;
+                Debug.Log("Player placed chess at 2,1");
                 Instantiate(PlayerChess, new Vector3(3.2f, 0.0f, 0.0f), Quaternion.identity, null);
                 playerChessPos[5] = true;
-                TotalChessPos[5] = true;
+                TotalChessPos[5] = CellStatus.Player;
             }
             if (mousePos.x > -4.5f && mousePos.x < -1.9f && mousePos.y > 1.9f && mousePos.y < 4.5f)
             {
-                if (TotalChessPos[6]) return;
-                //Debug.Log("Player placed chess at 0,2");
+                if (TotalChessPos[6] != CellStatus.Empty) return;
+                Debug.Log("Player placed chess at 0,2");
                 Instantiate(PlayerChess, new Vector3(-3.2f, 3.2f, 0.0f), Quaternion.identity, null);
                 playerChessPos[6] = true;
-                TotalChessPos[6] = true;
+                TotalChessPos[6] = CellStatus.Player;
             }
             if (mousePos.x > -1.3f && mousePos.x < 1.3f && mousePos.y > 1.9f && mousePos.y < 4.5f)
             {
-                if (TotalChessPos[7]) return;
-                //Debug.Log("Player placed chess at 1,2");
+                if (TotalChessPos[7] != CellStatus.Empty) return;
+                Debug.Log("Player placed chess at 1,2");
                 Instantiate(PlayerChess, new Vector3(0.0f, 3.2f, 0.0f), Quaternion.identity, null);
                 playerChessPos[7] = true;
-                TotalChessPos[7] = true;
+                TotalChessPos[7] = CellStatus.Player;
             }
             if (mousePos.x > 1.9f && mousePos.x < 4.5f && mousePos.y > 1.9f && mousePos.y < 4.5f)
             {
-                if (TotalChessPos[8]) return;
-                //Debug.Log("Player placed chess at 2,2");
+                if (TotalChessPos[8] != CellStatus.Empty) return;
+                Debug.Log("Player placed chess at 2,2");
                 Instantiate(PlayerChess, new Vector3(3.2f, 3.2f, 0.0f), Quaternion.identity, null);
                 playerChessPos[8] = true;
-                TotalChessPos[8] = true;
+                TotalChessPos[8] = CellStatus.Player;
             }
             WinningConditionCheck();
+            WinningValueCalculate();
             AIReadyToAction = true;
         }
         #endregion
@@ -120,7 +140,14 @@ public class GameManager : MonoBehaviour
         if (isGameOver) return;
         if (AIReadyToAction)
         {
-            AITakeAction();
+            if (AIDifficultyLevel == 1)
+            {
+                AITakeAction();
+            }
+            else
+            {
+                HardAITakeAction();
+            }
             AIReadyToAction = false;
         }
         #endregion
@@ -132,16 +159,38 @@ public class GameManager : MonoBehaviour
         while (true)
         {
             randomIndex = Random.Range(0, 8);
-            if (!TotalChessPos[randomIndex]) break;
-            if (TotalChessPos[0] && TotalChessPos[1] && TotalChessPos[2] &&
-                TotalChessPos[3] && TotalChessPos[4] && TotalChessPos[5] &&
-                TotalChessPos[6] && TotalChessPos[7] && TotalChessPos[8]) break;
+            if (TotalChessPos[randomIndex] == CellStatus.Empty) break;
+            if (TotalChessPos[0] != CellStatus.Empty && TotalChessPos[1] != CellStatus.Empty&&
+                TotalChessPos[2] != CellStatus.Empty && TotalChessPos[3] != CellStatus.Empty &&
+                TotalChessPos[4] != CellStatus.Empty && TotalChessPos[5] != CellStatus.Empty &&
+                TotalChessPos[6] != CellStatus.Empty && TotalChessPos[7] != CellStatus.Empty &&
+                TotalChessPos[8] != CellStatus.Empty) break;
         }
-        if (TotalChessPos[randomIndex]) return;
+        if (TotalChessPos[randomIndex] != CellStatus.Empty) return;
         Debug.Log("AI placed chess at " + GetCoordsFromIndex(randomIndex).x + "," + GetCoordsFromIndex(randomIndex).y);
         Instantiate(AIChess, ChessPositions[randomIndex], Quaternion.identity, null);
         AIChessPos[randomIndex] = true;
-        TotalChessPos[randomIndex] = true;
+        TotalChessPos[randomIndex] = CellStatus.AI;
+        WinningConditionCheck();
+    }
+
+    public void HardAITakeAction()
+    {
+        int targetIndex = 0;
+        WinningValue tempValue = WinningValue.Empty;
+        for (int index = 0; index < WinningValues.Length; ++index)
+        {
+            if (TotalChessPos[index] != CellStatus.Empty) continue;
+            if (WinningValues[index] < tempValue)
+            {
+                tempValue = WinningValues[index];
+                targetIndex = index;
+            }
+        }
+        Debug.Log("AI placed chess at " + GetCoordsFromIndex(targetIndex).x + "," + GetCoordsFromIndex(targetIndex).y);
+        Instantiate(AIChess, ChessPositions[targetIndex], Quaternion.identity, null);
+        AIChessPos[targetIndex] = true;
+        TotalChessPos[targetIndex] = CellStatus.AI;
         WinningConditionCheck();
     }
 
@@ -150,6 +199,12 @@ public class GameManager : MonoBehaviour
         if (isAIFirst) return;
         isAIFirst = true;
         AITakeAction();
+    }
+
+    public void ChangeAIDifficulty()
+    {
+        PlayerHUD hud = FindObjectOfType<PlayerHUD>();
+        AIDifficultyLevel = hud.dropDownMenu.value;
     }
 
     public void WinningConditionCheck()
@@ -202,13 +257,130 @@ public class GameManager : MonoBehaviour
             Lose();
             return;
         }
-        if (TotalChessPos[0] && TotalChessPos[1] && TotalChessPos[2] &&
-            TotalChessPos[3] && TotalChessPos[4] && TotalChessPos[5] &&
-                TotalChessPos[6] && TotalChessPos[7] && TotalChessPos[8])
+        if (TotalChessPos[0] != CellStatus.Empty && TotalChessPos[1] != CellStatus.Empty &&
+            TotalChessPos[2] != CellStatus.Empty && TotalChessPos[3] != CellStatus.Empty &&
+            TotalChessPos[4] != CellStatus.Empty && TotalChessPos[5] != CellStatus.Empty &&
+            TotalChessPos[6] != CellStatus.Empty && TotalChessPos[7] != CellStatus.Empty &&
+            TotalChessPos[8] != CellStatus.Empty)
         {
-            Lose();
+            Draw();
             return;
         }
+    }
+
+    public void WinningValueCalculate()
+    {
+        Vector2Int coords;
+        WinningValue horizontalValue, verticalValue, diagonalValue, tempValue;
+        for (int index = 0; index < WinningValues.Length; ++index) 
+        {
+            WinningValues[index] = WinningValue.Empty;
+            coords = GetCoordsFromIndex(index);
+            horizontalValue = CheckHorizontalValue(coords);
+            verticalValue = CheckVerticalValue(coords);
+            diagonalValue = CheckDiagonalValue(coords);
+            tempValue = horizontalValue < verticalValue ? horizontalValue : verticalValue;
+            tempValue = tempValue < diagonalValue ? tempValue : diagonalValue;
+            WinningValues[index] = tempValue;
+        }
+    }
+
+    private WinningValue CheckHorizontalValue(Vector2Int coords)
+    {
+        int neighbourAIndex = 0;
+        int neighbourBIndex = 0;
+        int index = GetIndexFromCoords(coords);
+        switch (coords.x)
+        {
+            case 0:
+                neighbourAIndex = index + 1;
+                neighbourBIndex = index + 2;
+                break;
+            case 1:
+                neighbourAIndex = index + 1;
+                neighbourBIndex = index - 1;
+                break;
+            case 2:
+                neighbourAIndex = index - 1;
+                neighbourBIndex = index - 2;
+                break;
+        }
+        return CheckWinningValue(TotalChessPos[neighbourAIndex], TotalChessPos[neighbourBIndex]);
+    }
+
+    private WinningValue CheckVerticalValue(Vector2Int coords)
+    {
+        int neighbourAIndex = 0;
+        int neighbourBIndex = 0;
+        int index = GetIndexFromCoords(coords);
+        switch (coords.y)
+        {
+            case 0:
+                neighbourAIndex = index + 3;
+                neighbourBIndex = index + 6;
+                break;
+            case 1:
+                neighbourAIndex = index + 3;
+                neighbourBIndex = index - 3;
+                break;
+            case 2:
+                neighbourAIndex = index - 3;
+                neighbourBIndex = index - 6;
+                break;
+        }
+        return CheckWinningValue(TotalChessPos[neighbourAIndex], TotalChessPos[neighbourBIndex]);
+    }
+
+    private WinningValue CheckDiagonalValue(Vector2Int coords)
+    {
+        int index = GetIndexFromCoords(coords);
+        switch (index)
+        {
+            case 0:
+                return CheckWinningValue(TotalChessPos[4], TotalChessPos[8]);
+            case 2:
+                return CheckWinningValue(TotalChessPos[4], TotalChessPos[6]);
+            case 4:
+                WinningValue tempValue;
+                WinningValue tempValue2;
+                tempValue = CheckWinningValue(TotalChessPos[2], TotalChessPos[6]);
+                tempValue2 = CheckWinningValue(TotalChessPos[0], TotalChessPos[8]);
+                return tempValue < tempValue2 ? tempValue : tempValue2;
+            case 6:
+                return CheckWinningValue(TotalChessPos[2], TotalChessPos[4]);
+            case 8:
+                return CheckWinningValue(TotalChessPos[0], TotalChessPos[4]);
+            default:
+                return WinningValue.Empty;
+        }
+    }
+
+    private WinningValue CheckWinningValue(CellStatus AStatus, CellStatus BStatus)
+    {
+        if (AStatus == CellStatus.AI && BStatus == CellStatus.AI)
+        {
+            return WinningValue.AIWin;
+        }
+        if (AStatus == CellStatus.Player && BStatus == CellStatus.Player)
+        {
+            return WinningValue.PlayerWin;
+        }
+        if ((AStatus == CellStatus.Empty && BStatus == CellStatus.Player) ||
+            (AStatus == CellStatus.Player && BStatus == CellStatus.Empty))
+        {
+            return WinningValue.PlayerAdvantage;
+        }
+        if ((AStatus == CellStatus.Empty && BStatus == CellStatus.AI) ||
+            (AStatus == CellStatus.AI && BStatus == CellStatus.Empty))
+        {
+            return WinningValue.AIAdvantage;
+        }
+        if ((AStatus == CellStatus.Player && BStatus == CellStatus.AI) ||
+            (AStatus == CellStatus.AI && BStatus == CellStatus.Player))
+        {
+            return WinningValue.DeadCell;
+        }
+        return WinningValue.Empty;
     }
 
     public void Win()
@@ -221,5 +393,11 @@ public class GameManager : MonoBehaviour
     {
         isGameOver = true;
         loseSprite.SetActive(true);
+    }
+
+    public void Draw()
+    {
+        isGameOver = true;
+        drawSprite.SetActive(true);
     }
 }
